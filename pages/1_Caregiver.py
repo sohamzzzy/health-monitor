@@ -22,7 +22,17 @@ if st.session_state.get("role") != "Caregiver":
 st.title("Caregiver Interface")
 st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.caption("Enter daily patient health data")
-name = st.selectbox("Patient Name", ["John", "Mary", "David"])
+#Real User Selection (Users created by admin will appear here)
+with open("users.json", "r") as f:
+    users = json.load(f)
+
+patient_names = [p["username"] for p in users["patients"]]
+
+if not patient_names:
+    st.warning("No patients available. Ask admin to add patients.")
+    st.stop()
+
+name = st.selectbox("Select Patient", patient_names)
 
 st.subheader("Vitals")
 

@@ -1,7 +1,1 @@
-{
-  "admin": {
-    "password": "admin123"
-  },
-  "caregivers": [],
-  "patients": []
-}
+{"admin": {"password": "admin123"}, "caregivers": [{"username": "care1", "password": "care123"}], "patients": [{"username": "pat1", "password": "pat123"}]}

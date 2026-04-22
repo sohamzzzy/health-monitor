@@ -7,16 +7,41 @@ st.set_page_config(page_title="Health Monitor", layout="wide")
 # Styling
 st.markdown("""
 <style>
-.card {
-    padding: 15px;
-    border-radius: 10px;
-    background-color: #f5f5f5;
-    margin-bottom: 10px;
+body {
+    background-color: #f8fafc;
 }
-.big-status {
-    font-size: 28px;
+
+/* Card */
+.card {
+    padding: 18px;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 15px;
+}
+
+/* Status styles */
+.status-critical {
+    color: #dc2626;
     font-weight: bold;
-    text-align: center;
+    font-size: 20px;
+}
+
+.status-monitor {
+    color: #f59e0b;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.status-normal {
+    color: #16a34a;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+/* Section spacing */
+.section {
+    margin-top: 25px;
 }
 </style>
 """, unsafe_allow_html=True)
