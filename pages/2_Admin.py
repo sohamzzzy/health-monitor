@@ -4,217 +4,218 @@ import datetime
 import pandas as pd
 
 # =========================
-# 🔐 ACCESS CONTROL
+# ACCESS CONTROL
 # =========================
 if st.session_state.get("role") != "Admin":
     st.warning("Access denied")
     st.stop()
 
 # =========================
-# 🎨 PREMIUM STYLING
+# STYLING
 # =========================
 st.markdown("""
 <style>
-body {
-    background-color: #f8fafc;
-}
+body { background-color: #f8fafc; }
 
 .card {
-    padding: 18px;
-    border-radius: 14px;
+    padding: 16px;
+    border-radius: 12px;
     background: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    margin-bottom: 15px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
 }
 
-.status-critical {
-    color: #dc2626;
-    font-weight: bold;
-    font-size: 20px;
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
 }
 
-.status-monitor {
-    color: #f59e0b;
-    font-weight: bold;
-    font-size: 20px;
+.card-meta {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 10px;
 }
 
-.status-normal {
-    color: #16a34a;
-    font-weight: bold;
-    font-size: 20px;
+.card-divider {
+    margin: 10px 0;
 }
 
-.section {
-    margin-top: 25px;
-}
+.status-critical { color: #dc2626; font-weight: bold; }
+.status-monitor { color: #f59e0b; font-weight: bold; }
+.status-normal { color: #16a34a; font-weight: bold; }
+
+.section { margin-top: 25px; }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("Admin Dashboard")
 
 # =========================
-# 📊 METRICS
+# LOAD DATA
 # =========================
-with open("users.json", "r") as f:
+with open("users.json") as f:
     users = json.load(f)
 
 try:
-    with open("data.json", "r") as f:
+    with open("data.json") as f:
         data = json.load(f)
 except:
     data = []
 
+# =========================
+# METRICS
+# =========================
 col1, col2, col3 = st.columns(3)
 col1.metric("Patients", len(users["patients"]))
 col2.metric("Caregivers", len(users["caregivers"]))
 col3.metric("Records", len(data))
 
 # =========================
-# 👥 USER MANAGEMENT
+# USER MANAGEMENT
 # =========================
 st.markdown("<div class='section'>", unsafe_allow_html=True)
 st.subheader("User Management")
 
-user_type = st.selectbox("Add User Type", ["Caregiver", "Patient"])
-new_username = st.text_input("New Username")
-new_password = st.text_input("New Password", type="password")
+user_type = st.selectbox("Type", ["Caregiver", "Patient"])
+u = st.text_input("Username")
+p = st.text_input("Password", type="password")
 
 if st.button("Add User"):
-    with open("users.json", "r") as f:
-        users = json.load(f)
-
     all_users = users["caregivers"] + users["patients"]
 
-    if any(u["username"] == new_username for u in all_users):
-        st.error("Username already exists")
+    if any(x["username"] == u for x in all_users):
+        st.error("Username exists")
     else:
-        new_user = {"username": new_username, "password": new_password}
-
-        if user_type == "Caregiver":
-            users["caregivers"].append(new_user)
-        else:
-            users["patients"].append(new_user)
+        new = {"username": u, "password": p}
+        users["caregivers" if user_type == "Caregiver" else "patients"].append(new)
 
         with open("users.json", "w") as f:
             json.dump(users, f)
 
-        st.success(f"{user_type} added successfully!")
-
-st.markdown("</div>", unsafe_allow_html=True)
+        st.success("User added")
 
 # =========================
-# 🔥 PREPARE DATA
+# PREP DATA
 # =========================
-latest_per_patient = {}
+latest = {}
 for d in data:
-    latest_per_patient[d["name"]] = d
+    latest[d["name"]] = d
 
 # =========================
-# 🚨 NEEDS ATTENTION
+# 🚨 NEEDS ATTENTION (FIXED GRID)
 # =========================
 st.markdown("<div class='section'>", unsafe_allow_html=True)
-st.subheader("🚨 Needs Attention Today")
+st.subheader("🚨 Needs Attention")
 
-now = datetime.datetime.now()
-attention_flag = False
+attention_items = []
 
-for d in latest_per_patient.values():
+for d in latest.values():
     try:
-        last_time = datetime.datetime.fromisoformat(d["time"])
-        diff = (now - last_time).seconds
+        t = datetime.datetime.fromisoformat(d["time"])
+        diff = (datetime.datetime.now() - t).seconds
 
         if d["status"] == "Critical" or diff > 3600:
-            attention_flag = True
-
-            st.markdown("<div class='card' style='border-left:5px solid #dc2626;'>", unsafe_allow_html=True)
-
-            st.subheader(f"👤 {d['name']}")
-
-            if d["status"] == "Critical":
-                st.error("Critical condition!")
-
-            if diff > 3600:
-                st.warning("Missed check-in!")
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
+            attention_items.append((d, diff))
     except:
         pass
 
-if not attention_flag:
+if not attention_items:
     st.success("All patients are stable")
 
-st.markdown("</div>", unsafe_allow_html=True)
+for i in range(0, len(attention_items), 2):
+    cols = st.columns(2)
+
+    for j in range(2):
+        if i + j >= len(attention_items):
+            break
+
+        d, diff = attention_items[i + j]
+
+        with cols[j]:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+
+            st.markdown(f"<div class='card-title'>👤 {d['name']}</div>", unsafe_allow_html=True)
+
+            if d["status"] == "Critical":
+                st.error("Critical condition")
+
+            if diff > 3600:
+                st.warning("Missed check-in")
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================
-# 📋 PATIENT RECORDS
+# PATIENT RECORDS
 # =========================
 st.markdown("<div class='section'>", unsafe_allow_html=True)
 st.subheader("Patient Records")
 
+search = st.text_input("Search Patient")
 filter_option = st.selectbox("Filter", ["All", "Critical Only"])
 
-# 🔍 SEARCH
-search = st.text_input("Search Patient")
+items = list(latest.values())
 
-items = list(latest_per_patient.values())
-
+# SEARCH
 if search:
     items = [d for d in items if search.lower() in d["name"].lower()]
 
+# FILTER
+if filter_option == "Critical Only":
+    items = [d for d in items if d["status"] == "Critical"]
+
 if not items:
-    st.warning("No matching data found")
-else:
-    # ✅ FIXED GRID
-    for i in range(0, len(items), 2):
-        cols = st.columns(2)
+    st.warning("No matching records")
 
-        for j in range(2):
-            if i + j >= len(items):
-                break
+# =========================
+# GRID (ALIGNED)
+# =========================
+for i in range(0, len(items), 2):
+    cols = st.columns(2)
 
-            d = items[i + j]
+    for j in range(2):
+        if i + j >= len(items):
+            break
 
-            if filter_option == "Critical Only" and d["status"] != "Critical":
-                continue
+        d = items[i + j]
 
-            with cols[j]:
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
+        with cols[j]:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-                st.subheader(f"👤 {d['name']}")
+            # HEADER
+            st.markdown(f"<div class='card-title'>👤 {d['name']}</div>", unsafe_allow_html=True)
 
-                st.markdown(f"**BP:** {d.get('sys', '-')}/{d.get('dia', '-')}")
-                st.markdown(f"**Sugar:** {d['sugar']} | Temp: {d['temp']}")
-                st.markdown(f"**Mood:** {d.get('mood', 'N/A')}")
+            # TIME
+            try:
+                t = datetime.datetime.fromisoformat(d["time"])
+                mins = int((datetime.datetime.now() - t).seconds / 60)
+                st.markdown(f"<div class='card-meta'>Updated {mins} mins ago</div>", unsafe_allow_html=True)
+            except:
+                pass
 
-                # ⏱ TIME
-                try:
-                    last_time = datetime.datetime.fromisoformat(d["time"])
-                    mins = int((datetime.datetime.now() - last_time).seconds / 60)
-                    st.caption(f"Updated {mins} mins ago")
-                except:
-                    st.caption("Updated: N/A")
+            # VITALS
+            st.markdown(f"**BP:** {d.get('sys','-')}/{d.get('dia','-')}")
+            st.markdown(f"**Sugar:** {d['sugar']} | **Temp:** {d['temp']}")
+            st.markdown(f"**Mood:** {d.get('mood','-')}")
 
-                # 📈 MINI CHART
-                history = [x for x in data if x["name"] == d["name"]]
+            st.markdown("<div class='card-divider'></div>", unsafe_allow_html=True)
 
-                if len(history) >= 2:
-                    df = pd.DataFrame({
-                        "BP": [x.get("sys", 0) for x in history]
-                    })
-                    st.line_chart(df)
+            # CHART
+            hist = [x for x in data if x["name"] == d["name"]]
+            hist = sorted(hist, key=lambda x: x.get("time", ""))
 
-                st.markdown("---")
+            bp = [x.get("sys") for x in hist if x.get("sys") is not None]
 
-                # 🚦 STATUS
-                if d["status"] == "Critical":
-                    st.markdown("<div class='status-critical'>🚨 CRITICAL</div>", unsafe_allow_html=True)
-                elif d["status"] == "Monitor":
-                    st.markdown("<div class='status-monitor'>⚠ MONITOR</div>", unsafe_allow_html=True)
-                else:
-                    st.markdown("<div class='status-normal'>✅ NORMAL</div>", unsafe_allow_html=True)
+            if len(bp) >= 2:
+                st.line_chart(pd.DataFrame({"BP": bp}))
 
-                st.markdown("</div>", unsafe_allow_html=True)
+            # STATUS
+            if d["status"] == "Critical":
+                st.markdown("<div class='status-critical'>🚨 CRITICAL</div>", unsafe_allow_html=True)
+            elif d["status"] == "Monitor":
+                st.markdown("<div class='status-monitor'>⚠ MONITOR</div>", unsafe_allow_html=True)
+            else:
+                st.markdown("<div class='status-normal'>✅ NORMAL</div>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
