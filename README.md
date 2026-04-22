@@ -89,21 +89,31 @@ pip install -r requirements.txt
 
 streamlit run app.py
 
+---
+
 ## 🌐 Deployment
 
-Deployed on Render: https://health-monitor-wsnl.onrender.com
+Deployed on Render:  
+https://health-monitor-wsnl.onrender.com
+
+---
 
 ## ⚠️ Note
 
-Data is stored in JSON files
+- Data is stored in JSON files  
+- On free hosting (Render), data may reset after redeploy  
 
-On free hosting (Render), data may reset after redeploy
+---
 
 ## 🎯 Future Improvements
-Database integration (MongoDB / Firebase)
-Secure authentication (hashed passwords)
-Mobile-friendly UI
-Advanced analytics / AI predictions
 
-# 👨‍💻 Author
+- Database integration (MongoDB / Firebase)
+- Secure authentication (hashed passwords)
+- Mobile-friendly UI
+- Advanced analytics / AI predictions
+
+---
+
+## 👨‍💻 Author
+
 Built by Soham 🚀
