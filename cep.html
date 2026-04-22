@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Health Monitor Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+    <style>
+      :root {
+        --bg: #f3f6f8;
+        --surface: rgba(255, 255, 255, 0.92);
+        --surface-strong: #ffffff;
+        --text: #13212b;
+        --muted: #64748b;
+        --border: rgba(148, 163, 184, 0.18);
+        --primary: #0f8b8d;
+        --primary-strong: #0b6e70;
+        --primary-soft: rgba(15, 139, 141, 0.12);
+        --danger: #dc2626;
+        --warning: #f59e0b;
+        --success: #16a34a;
+        --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --shadow-hover: 0 22px 50px rgba(15, 23, 42, 0.12);
+        --radius-xl: 24px;
+        --radius-lg: 20px;
+        --radius-md: 16px;
+        --radius-sm: 12px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(15, 139, 141, 0.12), transparent 32%),
+          radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 28%),
+          linear-gradient(180deg, #f8fbfc 0%, var(--bg) 100%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+      }
+
+      .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        background: rgba(248, 251, 252, 0.8);
+        backdrop-filter: blur(16px);
+      }
+
+      .navbar-inner,
+      .footer-inner,
+      .main-container {
+        width: min(1200px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .navbar-inner {
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand-wrap {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--primary), #38bdf8);
+        color: white;
+        font-size: 18px;
+        font-weight: 800;
+        box-shadow: 0 14px 24px rgba(15, 139, 141, 0.24);
+      }
+
+      .brand-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-subtitle {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-link {
+        padding: 10px 14px;
+        border-radius: 999px;
+        color: #334155;
+        font-size: 0.94rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .nav-link:hover {
+        background: rgba(226, 232, 240, 0.8);
+        color: var(--text);
+      }
+
+      .main-container {
+        padding: 40px 0 56px;
+      }
+
+      .hero-card,
+      .section-card,
+      .metric-card,
+      .alert-card,
+      .empty-card,
+      .about-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+      }
+
+      .hero-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.95fr);
+        gap: 24px;
+        padding: 28px;
+        border-radius: var(--radius-xl);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .hero-title {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-copy {
+        max-width: 60ch;
+        margin: 16px 0 0;
+        color: #475569;
+        line-height: 1.65;
+      }
+
+      .hero-actions,
+      .control-row {
+        display: flex;
+        align-items: end;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .hero-actions {
+        margin-top: 28px;
+      }
+
+      .button {
+        border: none;
+        border-radius: 14px;
+        padding: 12px 18px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, var(--primary), #14b8a6);
+        color: #fff;
+        box-shadow: 0 14px 30px rgba(15, 139, 141, 0.24);
+      }
+
+      .button-primary:hover {
+        box-shadow: 0 18px 34px rgba(15, 139, 141, 0.3);
+      }
+
+      .button-secondary {
+        background: rgba(226, 232, 240, 0.7);
+        color: var(--text);
+      }
+
+      .button-secondary:hover {
+        background: rgba(203, 213, 225, 0.85);
+      }
+
+      .pulse-card {
+        padding: 22px;
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(180deg, rgba(15, 139, 141, 0.08), rgba(255, 255, 255, 0.92)),
+          #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100%;
+      }
+
+      .live-dot-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #0f766e;
+        font-weight: 600;
+      }
+
+      .live-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.12);
+      }
+
+      .mini-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      .mini-stat {
+        padding: 16px;
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+      }
+
+      .mini-stat-label {
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+
+      .mini-stat-value {
+        margin-top: 8px;
+        font-size: 1.55rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .section {
+        margin-top: 40px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .section-text {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .metric-card {
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .metric-card:hover,
+      .section-card:hover,
+      .alert-card:hover,
+      .about-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .metric-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 4px;
+        background: var(--status-color, var(--primary));
+      }
+
+      .metric-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 12px;
+      }
+
+      .metric-label {
+        margin: 0;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--status-soft, var(--primary-soft));
+        color: var(--status-color, var(--primary));
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .metric-value-wrap {
+        margin-top: 28px;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .metric-value {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 2.7rem);
+        line-height: 1;
+        letter-spacing: -0.05em;
+      }
+
+      .metric-unit {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .metric-meta {
+        margin-top: 18px;
+        color: #475569;
+        font-size: 0.92rem;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .section-card,
+      .about-card,
+      .empty-card {
+        border-radius: var(--radius-xl);
+        padding: 22px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .chart-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .chart-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+
+      .chart-subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .chart-pill {
+        border-radius: 999px;
+        padding: 8px 12px;
+        background: rgba(15, 139, 141, 0.1);
+        color: var(--primary);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .alerts-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 0.9fr;
+        gap: 20px;
+      }
+
+      .alert-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .alert-card {
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        border: 1px solid var(--border);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .alert-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .alert-text {
+        margin: 8px 0 0;
+        color: #475569;
+        line-height: 1.5;
+      }
+
+      .summary-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .summary-card {
+        padding: 16px;
+        border-radius: var(--radius-md);
+        background: rgba(248, 250, 252, 0.9);
+        border: 1px solid rgba(226, 232, 240, 0.95);
+      }
+
+      .summary-label {
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      .summary-value {
+        margin-top: 8px;
+        font-weight: 700;
+        font-size: 1.05rem;
+      }
+
+      .controls-card {
+        display: grid;
+        gap: 16px;
+      }
+
+      .input-group {
+        display: grid;
+        gap: 8px;
+        min-width: 220px;
+        flex: 1;
+      }
+
+      .input-label {
+        color: #334155;
+        font-size: 0.88rem;
+        font-weight: 600;
+      }
+
+      .input-control {
+        width: 100%;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 14px;
+        padding: 13px 14px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .input-control:focus {
+        border-color: rgba(15, 139, 141, 0.55);
+        box-shadow: 0 0 0 4px rgba(15, 139, 141, 0.12);
+      }
+
+      .helper-text {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.55;
+      }
+
+      .loading-state,
+      .empty-card {
+        display: grid;
+        place-items: center;
+        min-height: 260px;
+        text-align: center;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 4px solid rgba(15, 139, 141, 0.12);
+        border-top-color: var(--primary);
+        animation: spin 0.9s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .footer {
+        border-top: 1px solid rgba(226, 232, 240, 0.9);
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .footer-inner {
+        padding: 20px 0 32px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .about-card {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      @media (max-width: 1080px) {
+        .metrics-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .charts-grid,
+        .alerts-grid,
+        .hero-card {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .navbar-inner,
+        .footer-inner {
+          width: min(1200px, calc(100% - 20px));
+        }
+
+        .main-container {
+          width: min(1200px, calc(100% - 20px));
+          padding-top: 24px;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .metrics-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-stats {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-card,
+        .section-card,
+        .metric-card,
+        .alert-card,
+        .about-card {
+          border-radius: 18px;
+        }
+
+        .hero-card {
+          padding: 20px;
+        }
+
+        .footer-inner {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const {
+        ResponsiveContainer,
+        LineChart,
+        Line,
+        CartesianGrid,
+        XAxis,
+        YAxis,
+        Tooltip,
+        Area,
+        AreaChart
+      } = Recharts;
+
+      const API_ENDPOINT = "/api/health";
+      const REFRESH_INTERVAL_MS = 30000;
+
+      const metricConfig = {
+        heartRate: {
+          label: "Heart Rate",
+          unit: "bpm",
+          formatter: (value) => Math.round(value)
+        },
+        temperature: {
+          label: "Temperature",
+          unit: "°C",
+          formatter: (value) => Number(value).toFixed(1)
+        },
+        spo2: {
+          label: "SpO2",
+          unit: "%",
+          formatter: (value) => Math.round(value)
+        },
+        respiratoryRate: {
+          label: "Respiratory Rate",
+          unit: "rpm",
+          formatter: (value) => Math.round(value)
+        }
+      };
+
+      const statusMap = {
+        normal: {
+          label: "Normal",
+          color: "#16a34a",
+          soft: "rgba(22, 163, 74, 0.12)"
+        },
+        warning: {
+          label: "Warning",
+          color: "#f59e0b",
+          soft: "rgba(245, 158, 11, 0.14)"
+        },
+        critical: {
+          label: "Critical",
+          color: "#dc2626",
+          soft: "rgba(220, 38, 38, 0.12)"
+        }
+      };
+
+      const sampleHistory = [
+        { time: "09:00", heartRate: 72, temperature: 36.7, spo2: 98, respiratoryRate: 15 },
+        { time: "09:30", heartRate: 76, temperature: 36.8, spo2: 98, respiratoryRate: 16 },
+        { time: "10:00", heartRate: 80, temperature: 37.0, spo2: 97, respiratoryRate: 17 },
+        { time: "10:30", heartRate: 78, temperature: 36.9, spo2: 98, respiratoryRate: 16 },
+        { time: "11:00", heartRate: 83, temperature: 37.1, spo2: 97, respiratoryRate: 18 },
+        { time: "11:30", heartRate: 79, temperature: 36.8, spo2: 99, respiratoryRate: 16 }
+      ];
+
+      function getMetricStatus(metric, value) {
+        if (value == null || Number.isNaN(Number(value))) {
+          return statusMap.warning;
+        }
+
+        const numericValue = Number(value);
+
+        switch (metric) {
+          case "heartRate":
+            if (numericValue < 50 || numericValue > 120) return statusMap.critical;
+            if (numericValue < 60 || numericValue > 100) return statusMap.warning;
+            return statusMap.normal;
+          case "temperature":
+            if (numericValue < 35 || numericValue >= 39) return statusMap.critical;
+            if (numericValue < 36.1 || numericValue > 37.5) return statusMap.warning;
+            return statusMap.normal;
+          case "spo2":
+            if (numericValue < 90) return statusMap.critical;
+            if (numericValue < 95) return statusMap.warning;
+            return statusMap.normal;
+          case "respiratoryRate":
+            if (numericValue < 10 || numericValue > 24) return statusMap.critical;
+            if (numericValue < 12 || numericValue > 20) return statusMap.warning;
+            return statusMap.normal;
+          default:
+            return statusMap.normal;
+        }
+      }
+
+      function formatTimestamp(value) {
+        if (!value) return "Latest";
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+
+        return date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      }
+
+      function deriveCurrentFromHistory(history) {
+        const last = Array.isArray(history) && history.length > 0 ? history[history.length - 1] : {};
+        return {
+          heartRate: last.heartRate ?? last.heart_rate ?? null,
+          temperature: last.temperature ?? last.temp ?? null,
+          spo2: last.spo2 ?? last.spO2 ?? last.oxygen ?? null,
+          respiratoryRate: last.respiratoryRate ?? last.respiratory_rate ?? null,
+          timestamp: last.timestamp ?? last.time ?? null
+        };
+      }
+
+      function normalizeHistory(historySource) {
+        if (!Array.isArray(historySource)) return sampleHistory;
+
+        return historySource
+          .map((entry, index) => {
+            const label =
+              entry.time ||
+              (entry.timestamp ? formatTimestamp(entry.timestamp) : `T${index + 1}`);
+
+            return {
+              time: label,
+              heartRate: Number(entry.heartRate ?? entry.heart_rate ?? 0),
+              temperature: Number(entry.temperature ?? entry.temp ?? 0),
+              spo2: Number(entry.spo2 ?? entry.spO2 ?? entry.oxygen ?? 0),
+              respiratoryRate: Number(entry.respiratoryRate ?? entry.respiratory_rate ?? 0)
+            };
+          })
+          .filter((entry) => Object.values(entry).some((value) => value !== 0 && value !== ""))
+          .slice(-12);
+      }
+
+      function normalizeApiResponse(payload) {
+        if (!payload) {
+          return {
+            current: deriveCurrentFromHistory(sampleHistory),
+            history: sampleHistory
+          };
+        }
+
+        if (Array.isArray(payload)) {
+          const history = normalizeHistory(payload);
+          return {
+            current: deriveCurrentFromHistory(history),
+            history
+          };
+        }
+
+        const history = normalizeHistory(payload.history ?? payload.readings ?? payload.data);
+        const lastHistoryPoint = history.length ? history[history.length - 1] : null;
+
+        const currentBlock = payload.current ?? payload.latest ?? payload;
+        const current = {
+          heartRate: Number(currentBlock.heartRate ?? currentBlock.heart_rate ?? lastHistoryPoint?.heartRate ?? 0),
+          temperature: Number(currentBlock.temperature ?? currentBlock.temp ?? lastHistoryPoint?.temperature ?? 0),
+          spo2: Number(currentBlock.spo2 ?? currentBlock.spO2 ?? currentBlock.oxygen ?? lastHistoryPoint?.spo2 ?? 0),
+          respiratoryRate: Number(
+            currentBlock.respiratoryRate ??
+              currentBlock.respiratory_rate ??
+              lastHistoryPoint?.respiratoryRate ??
+              0
+          ),
+          timestamp: currentBlock.timestamp ?? currentBlock.time ?? lastHistoryPoint?.time ?? null
+        };
+
+        return {
+          current,
+          history: history.length ? history : sampleHistory
+        };
+      }
+
+      function buildAlerts(current) {
+        return Object.keys(metricConfig)
+          .map((key) => {
+            const status = getMetricStatus(key, current[key]);
+            return {
+              metric: metricConfig[key].label,
+              value: current[key],
+              unit: metricConfig[key].unit,
+              status
+            };
+          })
+          .filter((item) => item.status.label !== "Normal")
+          .map((item) => ({
+            title: `${item.metric} requires attention`,
+            severity: item.status,
+            message: `${item.metric} is at ${metricConfig[
+              Object.keys(metricConfig).find((key) => metricConfig[key].label === item.metric)
+            ].formatter(item.value)} ${item.unit}.`
+          }));
+      }
+
+      function Navbar() {
+        return (
+          <header className="navbar">
+            <div className="navbar-inner">
+              <div className="brand-wrap">
+                <div className="brand-mark">HM</div>
+                <div>
+                  <h1 className="brand-title">Health Monitor</h1>
+                  <p className="brand-subtitle">Live patient vitals dashboard</p>
+                </div>
+              </div>
+
+              <nav className="nav-links" aria-label="Primary">
+                <a className="nav-link" href="#dashboard">
+                  Dashboard
+                </a>
+                <a className="nav-link" href="#about">
+                  About
+                </a>
+              </nav>
+            </div>
+          </header>
+        );
+      }
+
+      function MetricCard({ metricKey, value }) {
+        const config = metricConfig[metricKey];
+        const status = getMetricStatus(metricKey, value);
+        const displayValue =
+          value == null || Number.isNaN(Number(value)) ? "--" : config.formatter(Number(value));
+
+        return (
+          <article
+            className="metric-card"
+            style={{
+              "--status-color": status.color,
+              "--status-soft": status.soft
+            }}
+          >
+            <div className="metric-top">
+              <p className="metric-label">{config.label}</p>
+              <span className="status-badge">
+                <span className="status-dot"></span>
+                {status.label}
+              </span>
+            </div>
+
+            <div className="metric-value-wrap">
+              <h3 className="metric-value">{displayValue}</h3>
+              <span className="metric-unit">{config.unit}</span>
+            </div>
+
+            <div className="metric-meta">
+              Expected range stays monitored in real time with automatic status feedback.
+            </div>
+          </article>
+        );
+      }
+
+      function TrendChart({ title, subtitle, dataKey, color, unit, data }) {
+        return (
+          <section className="section-card">
+            <div className="chart-card-header">
+              <div>
+                <h3 className="chart-title">{title}</h3>
+                <p className="chart-subtitle">{subtitle}</p>
+              </div>
+              <div className="chart-pill">{unit}</div>
+            </div>
+
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <AreaChart data={data}>
+                  <defs>
+                    <linearGradient id={`${dataKey}-gradient`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={color} stopOpacity={0.32} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.24)" />
+                  <XAxis
+                    dataKey="time"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    width={40}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "14px",
+                      border: "1px solid rgba(226, 232, 240, 0.85)",
+                      boxShadow: "0 18px 38px rgba(15, 23, 42, 0.12)"
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={dataKey}
+                    stroke={color}
+                    strokeWidth={3}
+                    fill={`url(#${dataKey}-gradient)`}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
+        );
+      }
+
+      function AlertsPanel({ current, alerts, lastUpdated, usingFallback, endpoint }) {
+        const statuses = Object.keys(metricConfig).map((key) => getMetricStatus(key, current[key]).label);
+        const criticalCount = statuses.filter((status) => status === "Critical").length;
+        const warningCount = statuses.filter((status) => status === "Warning").length;
+        const overallStatus = criticalCount
+          ? statusMap.critical
+          : warningCount
+            ? statusMap.warning
+            : statusMap.normal;
+
+        return (
+          <div className="alerts-grid">
+            <section className="section-card">
+              <div className="chart-card-header">
+                <div>
+                  <h3 className="chart-title">Alerts & Status</h3>
+                  <p className="chart-subtitle">
+                    Priority events are surfaced automatically based on live readings.
+                  </p>
+                </div>
+                <span
+                  className="status-badge"
+                  style={{
+                    "--status-color": overallStatus.color,
+                    "--status-soft": overallStatus.soft
+                  }}
+                >
+                  <span className="status-dot"></span>
+                  {overallStatus.label}
+                </span>
+              </div>
+
+              <div className="alert-list">
+                {alerts.length ? (
+                  alerts.map((alert, index) => (
+                    <article
+                      className="alert-card"
+                      key={`${alert.title}-${index}`}
+                      style={{
+                        background: alert.severity.soft
+                      }}
+                    >
+                      <div>
+                        <h4 className="alert-title">{alert.title}</h4>
+                        <p className="alert-text">{alert.message}</p>
+                      </div>
+                      <span
+                        className="status-badge"
+                        style={{
+                          "--status-color": alert.severity.color,
+                          "--status-soft": "rgba(255,255,255,0.7)"
+                        }}
+                      >
+                        <span className="status-dot"></span>
+                        {alert.severity.label}
+                      </span>
+                    </article>
+                  ))
+                ) : (
+                  <article className="alert-card" style={{ background: "rgba(22, 163, 74, 0.08)" }}>
+                    <div>
+                      <h4 className="alert-title">All monitored metrics are stable</h4>
+                      <p className="alert-text">
+                        Current readings are within normal ranges. No active warnings or critical alerts.
+                      </p>
+                    </div>
+                    <span
+                      className="status-badge"
+                      style={{
+                        "--status-color": statusMap.normal.color,
+                        "--status-soft": "rgba(255,255,255,0.72)"
+                      }}
+                    >
+                      <span className="status-dot"></span>
+                      Normal
+                    </span>
+                  </article>
+                )}
+              </div>
+            </section>
+
+            <section className="about-card" id="about">
+              <div className="summary-grid">
+                <div className="summary-card">
+                  <div className="summary-label">Last updated</div>
+                  <div className="summary-value">{formatTimestamp(lastUpdated)}</div>
+                </div>
+                <div className="summary-card">
+                  <div className="summary-label">Data source</div>
+                  <div className="summary-value">{usingFallback ? "Demo sample data" : endpoint}</div>
+                </div>
+                <div className="summary-card">
+                  <div className="summary-label">Monitoring mode</div>
+                  <div className="summary-value">Auto-refresh every 30 seconds</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+      }
+
+      function Controls({ endpoint, setEndpoint, onRefresh, loading }) {
+        return (
+          <section className="section-card controls-card">
+            <div>
+              <h3 className="chart-title">Data Controls</h3>
+              <p className="chart-subtitle">
+                Keep your existing API intact by pointing this dashboard to the active health endpoint.
+              </p>
+            </div>
+
+            <div className="control-row">
+              <div className="input-group">
+                <label className="input-label" htmlFor="endpoint-input">
+                  API Endpoint
+                </label>
+                <input
+                  id="endpoint-input"
+                  className="input-control"
+                  value={endpoint}
+                  onChange={(event) => setEndpoint(event.target.value)}
+                  placeholder="/api/health"
+                />
+              </div>
+
+              <button className="button button-primary" onClick={onRefresh} disabled={loading}>
+                {loading ? "Refreshing..." : "Refresh Data"}
+              </button>
+            </div>
+
+            <p className="helper-text">
+              Supported response shapes include a single object, a payload with current and history fields, or an
+              array of readings. The dashboard maps common keys like heartRate, heart_rate, temperature, temp, and
+              spo2.
+            </p>
+          </section>
+        );
+      }
+
+      function Hero({ current, loading, onRefresh }) {
+        const overall = Object.keys(metricConfig).some(
+          (key) => getMetricStatus(key, current[key]).label === "Critical"
+        )
+          ? statusMap.critical
+          : Object.keys(metricConfig).some((key) => getMetricStatus(key, current[key]).label === "Warning")
+            ? statusMap.warning
+            : statusMap.normal;
+
+        return (
+          <section className="hero-card" id="dashboard">
+            <div>
+              <p className="eyebrow">Clinical Dashboard</p>
+              <h2 className="hero-title">Real-time health data, organized for faster decisions.</h2>
+              <p className="hero-copy">
+                A modern monitoring interface for heart rate, temperature, oxygen saturation, and respiratory
+                activity. Built to stay readable at a glance while still surfacing important changes clearly.
+              </p>
+
+              <div className="hero-actions">
+                <button className="button button-primary" onClick={onRefresh} disabled={loading}>
+                  {loading ? "Loading..." : "Sync Latest Readings"}
+                </button>
+                <a className="button button-secondary" href="#about">
+                  View Status Summary
+                </a>
+              </div>
+            </div>
+
+            <aside className="pulse-card">
+              <div className="live-dot-row">
+                <span className="live-dot"></span>
+                Monitoring live status
+              </div>
+
+              <div style={{ marginTop: "24px" }}>
+                <div className="summary-label">Overall condition</div>
+                <div className="summary-value" style={{ color: overall.color, fontSize: "1.9rem" }}>
+                  {overall.label}
+                </div>
+                <p className="helper-text" style={{ marginTop: "10px" }}>
+                  Status updates automatically as new readings arrive from the backend API.
+                </p>
+              </div>
+
+              <div className="mini-stats">
+                <div className="mini-stat">
+                  <div className="mini-stat-label">Heart Rate</div>
+                  <div className="mini-stat-value">
+                    {current.heartRate != null ? Math.round(current.heartRate) : "--"} bpm
+                  </div>
+                </div>
+                <div className="mini-stat">
+                  <div className="mini-stat-label">SpO2</div>
+                  <div className="mini-stat-value">{current.spo2 != null ? Math.round(current.spo2) : "--"}%</div>
+                </div>
+              </div>
+            </aside>
+          </section>
+        );
+      }
+
+      function LoadingState() {
+        return (
+          <section className="section-card loading-state">
+            <div>
+              <div className="spinner"></div>
+              <h3 className="chart-title" style={{ marginTop: "18px" }}>
+                Loading health data
+              </h3>
+              <p className="chart-subtitle">Fetching the latest readings from your backend API.</p>
+            </div>
+          </section>
+        );
+      }
+
+      function EmptyState({ message }) {
+        return (
+          <section className="empty-card">
+            <div>
+              <h3 className="chart-title">No health data available</h3>
+              <p className="chart-subtitle">{message || "Connect your backend endpoint to populate the dashboard."}</p>
+            </div>
+          </section>
+        );
+      }
+
+      function App() {
+        const [endpoint, setEndpoint] = React.useState(API_ENDPOINT);
+        const [healthData, setHealthData] = React.useState({
+          current: deriveCurrentFromHistory(sampleHistory),
+          history: sampleHistory
+        });
+        const [loading, setLoading] = React.useState(true);
+        const [error, setError] = React.useState("");
+        const [usingFallback, setUsingFallback] = React.useState(false);
+
+        const loadHealthData = React.useCallback(async () => {
+          setLoading(true);
+          setError("");
+
+          try {
+            const response = await fetch(endpoint, {
+              headers: {
+                Accept: "application/json"
+              }
+            });
+
+            if (!response.ok) {
+              throw new Error(`Request failed with status ${response.status}`);
+            }
+
+            const payload = await response.json();
+            const normalized = normalizeApiResponse(payload);
+            const hasAnyCurrentData = Object.keys(metricConfig).some((key) => normalized.current[key] > 0);
+
+            if (!hasAnyCurrentData) {
+              setHealthData(normalized);
+              setUsingFallback(false);
+              setError("No health data available");
+            } else {
+              setHealthData(normalized);
+              setUsingFallback(false);
+            }
+          } catch (fetchError) {
+            setHealthData({
+              current: deriveCurrentFromHistory(sampleHistory),
+              history: sampleHistory
+            });
+            setUsingFallback(true);
+            setError(fetchError.message || "Unable to fetch health data.");
+          } finally {
+            setLoading(false);
+          }
+        }, [endpoint]);
+
+        React.useEffect(() => {
+          loadHealthData();
+        }, [loadHealthData]);
+
+        React.useEffect(() => {
+          const intervalId = window.setInterval(loadHealthData, REFRESH_INTERVAL_MS);
+          return () => window.clearInterval(intervalId);
+        }, [loadHealthData]);
+
+        const alerts = buildAlerts(healthData.current);
+        const hasRealData = Object.keys(metricConfig).some((key) => healthData.current[key] > 0);
+
+        return (
+          <div className="app-shell">
+            <Navbar />
+
+            <main className="main-container">
+              <Hero current={healthData.current} loading={loading} onRefresh={loadHealthData} />
+
+              <section className="section">
+                <div className="section-head">
+                  <div>
+                    <h2 className="section-title">Vitals Overview</h2>
+                    <p className="section-text">
+                      Clean, glanceable cards keep each metric readable while status colors highlight urgency.
+                    </p>
+                  </div>
+                </div>
+
+                {loading && !hasRealData ? (
+                  <LoadingState />
+                ) : error === "No health data available" && !hasRealData ? (
+                  <EmptyState message={error} />
+                ) : (
+                  <div className="metrics-grid">
+                    <MetricCard metricKey="heartRate" value={healthData.current.heartRate} />
+                    <MetricCard metricKey="temperature" value={healthData.current.temperature} />
+                    <MetricCard metricKey="spo2" value={healthData.current.spo2} />
+                    <MetricCard metricKey="respiratoryRate" value={healthData.current.respiratoryRate} />
+                  </div>
+                )}
+              </section>
+
+              <section className="section">
+                <div className="section-head">
+                  <div>
+                    <h2 className="section-title">Trend Visualization</h2>
+                    <p className="section-text">
+                      Visual history adds quick context for movement over time without cluttering the interface.
+                    </p>
+                  </div>
+                </div>
+
+                {loading && !healthData.history.length ? (
+                  <LoadingState />
+                ) : !healthData.history.length ? (
+                  <EmptyState />
+                ) : (
+                  <div className="charts-grid">
+                    <TrendChart
+                      title="Heart Rate Trend"
+                      subtitle="Recent heart rate readings over time"
+                      dataKey="heartRate"
+                      unit="bpm"
+                      color="#0f8b8d"
+                      data={healthData.history}
+                    />
+                    <TrendChart
+                      title="Temperature Trend"
+                      subtitle="Recent temperature readings over time"
+                      dataKey="temperature"
+                      unit="°C"
+                      color="#ef4444"
+                      data={healthData.history}
+                    />
+                  </div>
+                )}
+              </section>
+
+              <section className="section">
+                <AlertsPanel
+                  current={healthData.current}
+                  alerts={alerts}
+                  lastUpdated={healthData.current.timestamp}
+                  usingFallback={usingFallback}
+                  endpoint={endpoint}
+                />
+              </section>
+
+              <section className="section">
+                <Controls
+                  endpoint={endpoint}
+                  setEndpoint={setEndpoint}
+                  onRefresh={loadHealthData}
+                  loading={loading}
+                />
+                {error && error !== "No health data available" ? (
+                  <p className="helper-text" style={{ marginTop: "12px", color: "#b91c1c" }}>
+                    API warning: {error}. Demo data is shown so the dashboard remains usable.
+                  </p>
+                ) : null}
+              </section>
+            </main>
+
+            <footer className="footer">
+              <div className="footer-inner">
+                <span>Health Monitor</span>
+                <span>{new Date().getFullYear()}</span>
+              </div>
+            </footer>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
