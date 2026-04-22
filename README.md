@@ -80,7 +80,6 @@ The system simulates intelligent behavior using rule-based detection:
 
 ## ⚙️ Setup (Local)
 
-```bash
 git clone (https://github.com/sohamzzzy/health-monitor.git)
 
 cd health-monitor
