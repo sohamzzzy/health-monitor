@@ -1,8 +1,28 @@
 import streamlit as st
 import json
+st.markdown("""
+<style>
+.card {
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f5f5f5;
+    margin-bottom: 10px;
+}
+.big-status {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+}
+</style>
+""", unsafe_allow_html=True)
+if st.session_state.get("role") != "Patient":
+    st.warning("Access denied")
+    st.stop()
 
 st.title("Patient Health Summary")
+st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.caption("Your latest health status")
+
 # Load data
 try:
     with open("data.json", "r") as f:
@@ -15,17 +35,28 @@ if not data:
 else:
     latest = data[-1]
 
-    st.subheader(f"Patient: {latest['name']}")
-
-    st.write(f"Blood Pressure: {latest['bp']}")
-    st.write(f"Sugar Level: {latest['sugar']}")
-    st.write(f"Temperature: {latest['temp']}")
-
+    st.markdown(f"<h2 style='text-align:center;'>Patient: {latest['name']}</h2>", unsafe_allow_html=True)
     st.markdown("---")
+    col1, col2 = st.columns(2)
 
+    with col1:
+        st.markdown(f"**BP:** {latest.get('sys', '-')}/{latest.get('dia', '-')}")
+        st.markdown(f"**Sugar:** {latest['sugar']}")
+
+    with col2:
+        st.markdown(f"**Temp:** {latest['temp']}")
+        st.markdown(f"**Mood:** {latest.get('mood', 'N/A')}")
+    st.caption(f"Last updated: {latest.get('time', 'N/A')}")
+    st.markdown("---")
+    #status
     if latest["status"] == "Critical":
-        st.error("⚠ Immediate medical attention required!")
+        st.markdown("<div class='big-status' style='color:red;'>CRITICAL</div>", unsafe_allow_html=True)
+        st.error("Immediate medical attention required!")
     elif latest["status"] == "Monitor":
-        st.warning("⚠ Health needs monitoring")
+        st.markdown("<div class='big-status' style='color:orange;'>MONITOR</div>", unsafe_allow_html=True)
+        st.warning("Health needs monitoring")
     else:
-        st.success("✔ You are in good condition")
+        st.markdown("<div class='big-status' style='color:green;'>NORMAL</div>", unsafe_allow_html=True)
+        st.success("You are in good condition")
+    st.markdown("---")
+st.markdown("</div>", unsafe_allow_html=True)
