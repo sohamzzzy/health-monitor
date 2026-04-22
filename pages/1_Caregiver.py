@@ -6,7 +6,7 @@ st.title("Caregiver Interface")
 st.caption("Enter daily patient health data")
 name = st.selectbox("Patient Name", ["John", "Mary", "David"])
 
-bp = st.number_input("Blood Pressure", min_value=0)
+bp = int(st.text_input("Blood Pressure", "0"))
 sugar = st.number_input("Sugar Level", min_value=0)
 temp = st.number_input("Temperature", min_value=0.0)
 
