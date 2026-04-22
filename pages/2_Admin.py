@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import datetime
+import pandas as pd
 
 # =========================
 # 🔐 ACCESS CONTROL
@@ -147,52 +148,73 @@ if not attention_flag:
 st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================
-# 📋 PATIENT RECORDS (GRID)
+# 📋 PATIENT RECORDS
 # =========================
 st.markdown("<div class='section'>", unsafe_allow_html=True)
 st.subheader("Patient Records")
 
 filter_option = st.selectbox("Filter", ["All", "Critical Only"])
 
-if not latest_per_patient:
-    st.warning("No data available")
+# 🔍 SEARCH
+search = st.text_input("Search Patient")
+
+items = list(latest_per_patient.values())
+
+if search:
+    items = [d for d in items if search.lower() in d["name"].lower()]
+
+if not items:
+    st.warning("No matching data found")
 else:
-    cols = st.columns(2)
+    # ✅ FIXED GRID
+    for i in range(0, len(items), 2):
+        cols = st.columns(2)
 
-    for i, d in enumerate(latest_per_patient.values()):
+        for j in range(2):
+            if i + j >= len(items):
+                break
 
-        if filter_option == "Critical Only" and d["status"] != "Critical":
-            continue
+            d = items[i + j]
 
-        col = cols[i % 2]
+            if filter_option == "Critical Only" and d["status"] != "Critical":
+                continue
 
-        with col:
-            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            with cols[j]:
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-            st.subheader(f"👤 {d['name']}")
+                st.subheader(f"👤 {d['name']}")
 
-            st.markdown(f"**BP:** {d.get('sys', '-')}/{d.get('dia', '-')}")
-            st.markdown(f"**Sugar:** {d['sugar']} | Temp: {d['temp']}")
-            st.markdown(f"**Mood:** {d.get('mood', 'N/A')}")
+                st.markdown(f"**BP:** {d.get('sys', '-')}/{d.get('dia', '-')}")
+                st.markdown(f"**Sugar:** {d['sugar']} | Temp: {d['temp']}")
+                st.markdown(f"**Mood:** {d.get('mood', 'N/A')}")
 
-            # Time
-            try:
-                last_time = datetime.datetime.fromisoformat(d["time"])
-                mins = int((datetime.datetime.now() - last_time).seconds / 60)
-                st.caption(f"Updated {mins} mins ago")
-            except:
-                st.caption("Updated: N/A")
+                # ⏱ TIME
+                try:
+                    last_time = datetime.datetime.fromisoformat(d["time"])
+                    mins = int((datetime.datetime.now() - last_time).seconds / 60)
+                    st.caption(f"Updated {mins} mins ago")
+                except:
+                    st.caption("Updated: N/A")
 
-            st.markdown("---")
+                # 📈 MINI CHART
+                history = [x for x in data if x["name"] == d["name"]]
 
-            # Status
-            if d["status"] == "Critical":
-                st.markdown("<div class='status-critical'>🚨 CRITICAL</div>", unsafe_allow_html=True)
-            elif d["status"] == "Monitor":
-                st.markdown("<div class='status-monitor'>⚠ MONITOR</div>", unsafe_allow_html=True)
-            else:
-                st.markdown("<div class='status-normal'>✅ NORMAL</div>", unsafe_allow_html=True)
+                if len(history) >= 2:
+                    df = pd.DataFrame({
+                        "BP": [x.get("sys", 0) for x in history]
+                    })
+                    st.line_chart(df)
 
-            st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("---")
+
+                # 🚦 STATUS
+                if d["status"] == "Critical":
+                    st.markdown("<div class='status-critical'>🚨 CRITICAL</div>", unsafe_allow_html=True)
+                elif d["status"] == "Monitor":
+                    st.markdown("<div class='status-monitor'>⚠ MONITOR</div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<div class='status-normal'>✅ NORMAL</div>", unsafe_allow_html=True)
+
+                st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
