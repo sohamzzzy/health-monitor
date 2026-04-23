@@ -1,0 +1,46 @@
+[
+  {
+    "name": "pat",
+    "sys": 118,
+    "dia": 78,
+    "sugar": 130,
+    "temp": 98.4,
+    "mood": "Good",
+    "notes": "Normal readings",
+    "status": "Normal",
+    "time": "2026-04-23T08:00:00"
+  },
+  {
+    "name": "pat",
+    "sys": 125,
+    "dia": 82,
+    "sugar": 145,
+    "temp": 98.7,
+    "mood": "Okay",
+    "notes": "Slight increase in BP",
+    "status": "Monitor",
+    "time": "2026-04-23T09:00:00"
+  },
+  {
+    "name": "pat",
+    "sys": 135,
+    "dia": 88,
+    "sugar": 160,
+    "temp": 99.2,
+    "mood": "Okay",
+    "notes": "BP trending upward",
+    "status": "Monitor",
+    "time": "2026-04-23T10:00:00"
+  },
+  {
+    "name": "pat",
+    "sys": 150,
+    "dia": 95,
+    "sugar": 185,
+    "temp": 100.5,
+    "mood": "Bad",
+    "notes": "High BP and sugar, needs attention",
+    "status": "Critical",
+    "time": "2026-04-23T11:00:00"
+  }
+]
